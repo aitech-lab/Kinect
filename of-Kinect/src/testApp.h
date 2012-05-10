@@ -29,5 +29,7 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		Kinect kinect;
+		ofImage color;
+		ofImage depth;
 
 };

@@ -5,9 +5,7 @@
 //-------------------------------------------------------------------
 // Constructor
 //-------------------------------------------------------------------
-Kinect::Kinect() : 
-	m_hInstance(NULL),
-	m_pNuiSensor(NULL) {
+Kinect::Kinect() :m_pNuiSensor(NULL) {
 
 	Nui_Zero();
 }
@@ -45,21 +43,8 @@ void Kinect::Nui_Zero() {
     m_hThNuiProcess        = NULL;
     m_hEvNuiProcessStop    = NULL;
    
-	m_SkeletonDC     = NULL;
-    m_SkeletonBMP    = NULL;
-    m_SkeletonOldObj = NULL;
-    m_instanceId     = NULL;
-
-	ZeroMemory(m_Points, sizeof(m_Points));
-    
-	m_LastSkeletonFoundTime = 0;
     m_bScreenBlanked = false;
-    m_DepthFramesTotal = 0;
-    m_LastDepthFPStime = 0;
-    m_LastDepthFramesTotal = 0;
     
-	ZeroMemory(m_SkeletonIds,sizeof(m_SkeletonIds));
-    ZeroMemory(m_TrackedSkeletonIds,sizeof(m_SkeletonIds));
 }
 
 void CALLBACK Kinect::Nui_StatusProcThunk( HRESULT hrStatus, const OLECHAR* instanceName, const OLECHAR* uniqueDeviceName, void * pUserData ) {
@@ -96,8 +81,6 @@ void CALLBACK Kinect::Nui_StatusProc( HRESULT hrStatus, const OLECHAR* instanceN
 HRESULT Kinect::Nui_Init( ) {
 
     HRESULT  hr;
-    RECT     rc;
-    bool     result;
 
     if ( !m_pNuiSensor ) {
 
@@ -107,26 +90,26 @@ HRESULT Kinect::Nui_Init( ) {
             return hr;
         }
 
-        SysFreeString(m_instanceId);
-
-        m_instanceId = m_pNuiSensor->NuiDeviceConnectionId();
+        //SysFreeString(m_instanceId);
+		//
+        //m_instanceId = m_pNuiSensor->NuiDeviceConnectionId();
     }
 
-    m_hNextDepthFrameEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-    m_hNextColorFrameEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-    m_hNextSkeletonEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+    m_hNextDepthFrameEvent = CreateEventW( NULL, TRUE, FALSE, NULL );
+    m_hNextColorFrameEvent = CreateEventW( NULL, TRUE, FALSE, NULL );
+    m_hNextSkeletonEvent =   CreateEventW( NULL, TRUE, FALSE, NULL );
 
-    GetWindowRect( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), &rc );  
-    HDC hdc = GetDC( GetDlgItem( m_hWnd, IDC_SKELETALVIEW) );
+    // GetWindowRect( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), &rc );  
+    // HDC hdc = GetDC( GetDlgItem( m_hWnd, IDC_SKELETALVIEW) );
     
-    int width = rc.right - rc.left;
-    int height = rc.bottom - rc.top;
+    // int width = rc.right - rc.left;
+    // int height = rc.bottom - rc.top;
 
-    m_SkeletonBMP = CreateCompatibleBitmap( hdc, width, height );
-    m_SkeletonDC = CreateCompatibleDC( hdc );
+    // m_SkeletonBMP = CreateCompatibleBitmap( hdc, width, height );
+    // m_SkeletonDC = CreateCompatibleDC( hdc );
     
-    ReleaseDC(GetDlgItem(m_hWnd,IDC_SKELETALVIEW), hdc );
-    m_SkeletonOldObj = SelectObject( m_SkeletonDC, m_SkeletonBMP );
+    // ReleaseDC(GetDlgItem(m_hWnd,IDC_SKELETALVIEW), hdc );
+    // m_SkeletonOldObj = SelectObject( m_SkeletonDC, m_SkeletonBMP );
 
     
     DWORD nuiFlags = NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX | NUI_INITIALIZE_FLAG_USES_SKELETON |  NUI_INITIALIZE_FLAG_USES_COLOR;
@@ -183,7 +166,7 @@ HRESULT Kinect::Nui_Init( ) {
     }
 
     // Start the Nui processing thread
-    m_hEvNuiProcessStop = CreateEvent( NULL, FALSE, FALSE, NULL );
+    m_hEvNuiProcessStop = CreateEventW( NULL, FALSE, FALSE, NULL );
     m_hThNuiProcess =     CreateThread( NULL, 0, Nui_ProcessThread, this, 0, NULL );
 
     return hr;
@@ -195,23 +178,6 @@ HRESULT Kinect::Nui_Init( ) {
 // Uninitialize Kinect
 //-------------------------------------------------------------------
 void Kinect::Nui_UnInit( ) {
-
-    SelectObject( m_SkeletonDC, m_SkeletonOldObj );
-    DeleteDC( m_SkeletonDC );
-    // DeleteObject( m_SkeletonBMP );
-
-    // if ( NULL != m_Pen[0] ) {
-    //     for ( int i = 0; i < NUI_SKELETON_COUNT; i++ )
-    //     {
-    //         DeleteObject( m_Pen[i] );
-    //     }
-    //     ZeroMemory( m_Pen, sizeof(m_Pen) );
-    // }
-
-    if ( NULL != m_hFontSkeletonId ) {
-        DeleteObject( m_hFontSkeletonId );
-        m_hFontSkeletonId = NULL;
-    }
 
     // Stop the Nui processing thread
     if ( NULL != m_hEvNuiProcessStop ) {
@@ -249,13 +215,6 @@ void Kinect::Nui_UnInit( ) {
         m_pNuiSensor->Release();
         m_pNuiSensor = NULL;
     }
-
-    // clean up graphics
-    // delete m_pDrawDepth;
-    // m_pDrawDepth = NULL;
-	// 
-    // delete m_pDrawColor;
-    // m_pDrawColor = NULL;    
 }
 
 DWORD WINAPI Kinect::Nui_ProcessThread(LPVOID pParam) {
@@ -274,7 +233,7 @@ DWORD WINAPI Kinect::Nui_ProcessThread() {
     int    nEventIdx;
     DWORD  t;
 
-    m_LastDepthFPStime = timeGetTime( );
+    //m_LastDepthFPStime = timeGetTime( );
 
     //blank the skeleton display on startup
     m_LastSkeletonFoundTime = 0;
@@ -311,24 +270,6 @@ DWORD WINAPI Kinect::Nui_ProcessThread() {
                 break;
         }
 
-        // Once per second, display the depth FPS
-        // t = timeGetTime( );
-        // if ( (t - m_LastDepthFPStime) > 1000 ) {
-        //     int fps = ((m_DepthFramesTotal - m_LastDepthFramesTotal) * 1000 + 500) / (t - m_LastDepthFPStime);
-        //     PostMessageW( m_hWnd, WM_USER_UPDATE_FPS, IDC_FPS, fps );
-        //     m_LastDepthFramesTotal = m_DepthFramesTotal;
-        //     m_LastDepthFPStime = t;
-        // }
-		// 
-        // // Blank the skeleton panel if we haven't found a skeleton recently
-        // if ( (t - m_LastSkeletonFoundTime) > 250 )
-        // {
-        //     if ( !m_bScreenBlanked )
-        //     {
-        //         Nui_BlankSkeletonScreen( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), true );
-        //         m_bScreenBlanked = true;
-        //     }
-        // }
     }
 
     return 0;
@@ -339,6 +280,7 @@ DWORD WINAPI Kinect::Nui_ProcessThread() {
 //
 // Handle new color data
 //-------------------------------------------------------------------
+
 void Kinect::Nui_GotColorAlert( ) {
 	printf("C");
 
@@ -350,14 +292,15 @@ void Kinect::Nui_GotColorAlert( ) {
         return;
     }
 
-    // INuiFrameTexture * pTexture = imageFrame.pFrameTexture;
-    // NUI_LOCKED_RECT LockedRect;
-    // pTexture->LockRect( 0, &LockedRect, NULL, 0 );
-    // if ( LockedRect.Pitch != 0 ) {
-    //     m_pDrawColor->Draw( static_cast<BYTE *>(LockedRect.pBits), LockedRect.size );
-    // } else {
-    //     OutputDebugString( L"Buffer length of received texture is bogus\r\n" );
-    // }
+    INuiFrameTexture * pTexture = imageFrame.pFrameTexture;
+    NUI_LOCKED_RECT LockedRect;
+    pTexture->LockRect( 0, &LockedRect, NULL, 0 );
+
+	if ( LockedRect.Pitch != 0 ) {
+		memcpy(colorBuffer, LockedRect.pBits, 640*480*3);
+		//color.setFromPixels((const unsigned char*)(LockedRect.pBits), 640,480, OF_IMAGE_COLOR);
+		
+    } 
 
     // pTexture->UnlockRect( 0 );
 
@@ -383,35 +326,31 @@ void Kinect::Nui_GotDepthAlert( ) {
         return;
     }
 
-    //INuiFrameTexture * pTexture = imageFrame.pFrameTexture;
-    //NUI_LOCKED_RECT LockedRect;
-    //pTexture->LockRect( 0, &LockedRect, NULL, 0 );
-    //if ( 0 != LockedRect.Pitch ) {
-    //    DWORD frameWidth, frameHeight;
-    //    
-    //    NuiImageResolutionToSize( imageFrame.eResolution, frameWidth, frameHeight );
-    //    
-    //    // draw the bits to the bitmap
-    //    RGBQUAD * rgbrun = m_rgbWk;
-    //    USHORT * pBufferRun = (USHORT *)LockedRect.pBits;
-	//
-    //    // end pixel is start + width*height - 1
-    //    USHORT * pBufferEnd = pBufferRun + (frameWidth * frameHeight);
-	//
-    //    assert( frameWidth * frameHeight <= ARRAYSIZE(m_rgbWk) );
-	//
-    //    while ( pBufferRun < pBufferEnd )
-    //    {
-    //        *rgbrun = Nui_ShortToQuad_Depth( *pBufferRun );
-    //        ++pBufferRun;
-    //        ++rgbrun;
-    //    }
-	// 
-    //     m_pDrawDepth->Draw( (BYTE*) m_rgbWk, frameWidth * frameHeight * 4 );
-    // } else {
-    //     OutputDebugString( L"Buffer length of received texture is bogus\r\n" );
-    // }
-    // pTexture->UnlockRect( 0 );
+    INuiFrameTexture * pTexture = imageFrame.pFrameTexture;
+    NUI_LOCKED_RECT LockedRect;
+    pTexture->LockRect( 0, &LockedRect, NULL, 0 );
+    if ( 0 != LockedRect.Pitch ) {
+
+		DWORD frameWidth, frameHeight;
+		
+		NuiImageResolutionToSize( imageFrame.eResolution, frameWidth, frameHeight );
+		
+		// draw the bits to the bitmap
+		RGBQUAD * rgbrun = (RGBQUAD*) depthBuffer;
+		USHORT * pBufferRun = (USHORT *)LockedRect.pBits;
+
+		// end pixel is start + width*height - 1
+		USHORT * pBufferEnd = pBufferRun + (frameWidth * frameHeight);
+
+		assert( frameWidth * frameHeight <= ARRAYSIZE(m_rgbWk) );
+
+		while ( pBufferRun < pBufferEnd ) {
+		    *rgbrun = Nui_ShortToQuad_Depth( *pBufferRun );
+		    ++pBufferRun;
+		    ++rgbrun;
+		}
+    }
+    pTexture->UnlockRect( 0 );
 
     m_pNuiSensor->NuiImageStreamReleaseFrame( m_pDepthStreamHandle, &imageFrame );
 }
@@ -463,30 +402,30 @@ void Kinect::Nui_GotSkeletonAlert( ) {
     }
 
     // we found a skeleton, re-start the skeletal timer
-    m_bScreenBlanked = false;
-    m_LastSkeletonFoundTime = timeGetTime( );
+    // m_bScreenBlanked = false;
+    // m_LastSkeletonFoundTime = timeGetTime( );
 
     // draw each skeleton color according to the slot within they are found.
-    //Nui_BlankSkeletonScreen( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), false );
-
-    bool bSkeletonIdsChanged = false;
-    for ( int i = 0 ; i < NUI_SKELETON_COUNT; i++ ) {
-        if ( m_SkeletonIds[i] != SkeletonFrame.SkeletonData[i].dwTrackingID ) {
-            m_SkeletonIds[i] = SkeletonFrame.SkeletonData[i].dwTrackingID;
-            bSkeletonIdsChanged = true;
-        }
-
-        // Show skeleton only if it is tracked, and the center-shoulder joint is at least inferred.
-        if( SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_TRACKED &&
-            SkeletonFrame.SkeletonData[i].eSkeletonPositionTrackingState[NUI_SKELETON_POSITION_SHOULDER_CENTER] != NUI_SKELETON_POSITION_NOT_TRACKED)
-        {
-            //Nui_DrawSkeleton( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
-        } else if ( m_bAppTracking && SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_POSITION_ONLY ) {
-            //Nui_DrawSkeletonId( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
-        }
-    }
-
-    Nui_DoDoubleBuffer(GetDlgItem(m_hWnd,IDC_SKELETALVIEW), m_SkeletonDC);
+    // Nui_BlankSkeletonScreen( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), false );
+	// 
+    // bool bSkeletonIdsChanged = false;
+    // for ( int i = 0 ; i < NUI_SKELETON_COUNT; i++ ) {
+    //     if ( m_SkeletonIds[i] != SkeletonFrame.SkeletonData[i].dwTrackingID ) {
+    //         m_SkeletonIds[i] = SkeletonFrame.SkeletonData[i].dwTrackingID;
+    //         bSkeletonIdsChanged = true;
+    //     }
+	// 
+    //     // Show skeleton only if it is tracked, and the center-shoulder joint is at least inferred.
+    //     if( SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_TRACKED &&
+    //         SkeletonFrame.SkeletonData[i].eSkeletonPositionTrackingState[NUI_SKELETON_POSITION_SHOULDER_CENTER] != NUI_SKELETON_POSITION_NOT_TRACKED)
+    //     {
+    //         //Nui_DrawSkeleton( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
+    //     } else if ( m_bAppTracking && SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_POSITION_ONLY ) {
+    //         //Nui_DrawSkeletonId( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
+    //     }
+    // }
+	// 
+    //Nui_DoDoubleBuffer(GetDlgItem(m_hWnd,IDC_SKELETALVIEW), m_SkeletonDC);
 }
 
 //-------------------------------------------------------------------

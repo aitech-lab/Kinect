@@ -1,10 +1,10 @@
 #ifndef __KINECT__
 #define __KINECT__
-
 // Windows Header Files
-#include "resource.h"
 
+#include "resource.h"
 #include <windows.h>
+#include <WinBase.h>
 #include <ole2.h>
 #include <stdio.h>
 
@@ -18,17 +18,18 @@
 
 #include "NuiApi.h"
 
+
 class Kinect {
 
 public:
     Kinect();
    ~Kinect();
 
-    HRESULT                 Nui_Init( );
+    HRESULT                 Nui_Init  ( );
     void                    Nui_UnInit( );
 
-    void                    Nui_GotDepthAlert( );
-    void                    Nui_GotColorAlert( );
+    void                    Nui_GotDepthAlert   ( );
+    void                    Nui_GotColorAlert   ( );
     void                    Nui_GotSkeletonAlert( );
 
     void                    Nui_Zero();
@@ -40,15 +41,16 @@ public:
 
     RGBQUAD                 Nui_ShortToQuad_Depth( USHORT s );
 
-    static LRESULT CALLBACK MessageRouter(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    LRESULT CALLBACK        WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK MessageRouter      (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    LRESULT CALLBACK        WndProc            (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     static void CALLBACK    Nui_StatusProcThunk(HRESULT hrStatus, const OLECHAR* instanceName, const OLECHAR* uniqueDeviceName, void* pUserData);
-    void CALLBACK           Nui_StatusProc( HRESULT hrStatus, const OLECHAR* instanceName, const OLECHAR* uniqueDeviceName );
+    void CALLBACK           Nui_StatusProc     ( HRESULT hrStatus, const OLECHAR* instanceName, const OLECHAR* uniqueDeviceName );
 
-    HWND                    m_hWnd;
-    HINSTANCE               m_hInstance;
+    // HWND                    m_hWnd;
+    // HINSTANCE               m_hInstance;
 
-    int MessageBoxResource(UINT nID, UINT nType);
+	unsigned char colorBuffer[640*480*4];
+	unsigned char depthBuffer[320*240*4];
 
 private:
     void UpdateComboBox();
