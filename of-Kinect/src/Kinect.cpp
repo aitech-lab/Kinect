@@ -1,23 +1,14 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="SkeletalViewer.cpp" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-// This module provides sample code used to demonstrate Kinect NUI processing
-
-// Note: 
-//     Platform SDK lib path should be added before the VC lib
-//     path, because uuid.lib in VC lib path may be older
-
-#include <strsafe.h>
+﻿
 #include "Kinect.h"
-#include "resource.h"
+
 
 //-------------------------------------------------------------------
 // Constructor
 //-------------------------------------------------------------------
-Kinect::Kinect() : m_hInstance(NULL) {
+Kinect::Kinect() : 
+	m_hInstance(NULL),
+	m_pNuiSensor(NULL) {
+
 	Nui_Zero();
 }
 
@@ -27,38 +18,6 @@ Kinect::Kinect() : m_hInstance(NULL) {
 Kinect::~Kinect() {
     Nui_Zero();
 }
-
-static const COLORREF g_JointColorTable[NUI_SKELETON_POSITION_COUNT] =  {
-    RGB(169, 176, 155), // NUI_SKELETON_POSITION_HIP_CENTER
-    RGB(169, 176, 155), // NUI_SKELETON_POSITION_SPINE
-    RGB(168, 230,  29), // NUI_SKELETON_POSITION_SHOULDER_CENTER
-    RGB(200,   0,   0), // NUI_SKELETON_POSITION_HEAD
-    RGB( 79,  84,  33), // NUI_SKELETON_POSITION_SHOULDER_LEFT
-    RGB( 84,  33,  42), // NUI_SKELETON_POSITION_ELBOW_LEFT
-    RGB(255, 126,   0), // NUI_SKELETON_POSITION_WRIST_LEFT
-    RGB(215,  86,   0), // NUI_SKELETON_POSITION_HAND_LEFT
-    RGB( 33,  79,  84), // NUI_SKELETON_POSITION_SHOULDER_RIGHT
-    RGB( 33,  33,  84), // NUI_SKELETON_POSITION_ELBOW_RIGHT
-    RGB( 77, 109, 243), // NUI_SKELETON_POSITION_WRIST_RIGHT
-    RGB( 37,  69, 243), // NUI_SKELETON_POSITION_HAND_RIGHT
-    RGB( 77, 109, 243), // NUI_SKELETON_POSITION_HIP_LEFT
-    RGB( 69,  33,  84), // NUI_SKELETON_POSITION_KNEE_LEFT
-    RGB(229, 170, 122), // NUI_SKELETON_POSITION_ANKLE_LEFT
-    RGB(255, 126,   0), // NUI_SKELETON_POSITION_FOOT_LEFT
-    RGB(181, 165, 213), // NUI_SKELETON_POSITION_HIP_RIGHT
-    RGB( 71, 222,  76), // NUI_SKELETON_POSITION_KNEE_RIGHT
-    RGB(245, 228, 156), // NUI_SKELETON_POSITION_ANKLE_RIGHT
-    RGB( 77, 109, 243)  // NUI_SKELETON_POSITION_FOOT_RIGHT
-};
-
-static const COLORREF g_SkeletonColors[NUI_SKELETON_COUNT] = {
-    RGB( 255,   0,   0 ),
-    RGB(   0, 255,   0 ),
-    RGB(  64, 255, 255 ),
-    RGB( 255, 255,  64 ),
-    RGB( 255,  64, 255 ),
-    RGB( 128, 128, 255 )
-};
 
 //lookups for color tinting based on player index
 static const int g_IntensityShiftByPlayerR[] = { 1, 2, 0, 2, 0, 0, 2, 0 };
@@ -89,8 +48,8 @@ void Kinect::Nui_Zero() {
 	m_SkeletonDC     = NULL;
     m_SkeletonBMP    = NULL;
     m_SkeletonOldObj = NULL;
-    m_PensTotal      = 6;
-    
+    m_instanceId     = NULL;
+
 	ZeroMemory(m_Points, sizeof(m_Points));
     
 	m_LastSkeletonFoundTime = 0;
@@ -119,11 +78,7 @@ void CALLBACK Kinect::Nui_StatusProc( HRESULT hrStatus, const OLECHAR* instanceN
 
     if( SUCCEEDED(hrStatus) ) {
         if ( S_OK == hrStatus ) {
-            if ( m_instanceId && 0 == wcscmp(instanceName, m_instanceId) ) {
-                Nui_Init(m_instanceId);
-            } else if ( !m_pNuiSensor ) {
-                Nui_Init();
-            }
+			Nui_Init();
         }
     } else {
         if ( m_instanceId && 0 == wcscmp(instanceName, m_instanceId) ) {
@@ -173,21 +128,6 @@ HRESULT Kinect::Nui_Init( ) {
     ReleaseDC(GetDlgItem(m_hWnd,IDC_SKELETALVIEW), hdc );
     m_SkeletonOldObj = SelectObject( m_SkeletonDC, m_SkeletonBMP );
 
-    // m_pDrawDepth = new DrawDevice( );
-    // result = m_pDrawDepth->Initialize( GetDlgItem( m_hWnd, IDC_DEPTHVIEWER ), m_pD2DFactory, 320, 240, 320 * 4 );
-    
-	// if ( !result ) {
-    //     MessageBoxResource( IDS_ERROR_DRAWDEVICE, MB_OK | MB_ICONHAND );
-    //     return E_FAIL;
-    // }
-
-    // m_pDrawColor = new DrawDevice( );
-    // result = m_pDrawColor->Initialize( GetDlgItem( m_hWnd, IDC_VIDEOVIEW ), m_pD2DFactory, 640, 480, 640 * 4 );
-    // if ( !result )
-    // {
-    //     MessageBoxResource( IDS_ERROR_DRAWDEVICE, MB_OK | MB_ICONHAND );
-    //     return E_FAIL;
-    // }
     
     DWORD nuiFlags = NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX | NUI_INITIALIZE_FLAG_USES_SKELETON |  NUI_INITIALIZE_FLAG_USES_COLOR;
     hr = m_pNuiSensor->NuiInitialize( nuiFlags );
@@ -258,7 +198,7 @@ void Kinect::Nui_UnInit( ) {
 
     SelectObject( m_SkeletonDC, m_SkeletonOldObj );
     DeleteDC( m_SkeletonDC );
-    DeleteObject( m_SkeletonBMP );
+    // DeleteObject( m_SkeletonBMP );
 
     // if ( NULL != m_Pen[0] ) {
     //     for ( int i = 0; i < NUI_SKELETON_COUNT; i++ )
@@ -400,6 +340,8 @@ DWORD WINAPI Kinect::Nui_ProcessThread() {
 // Handle new color data
 //-------------------------------------------------------------------
 void Kinect::Nui_GotColorAlert( ) {
+	printf("C");
+
     NUI_IMAGE_FRAME imageFrame;
 
     HRESULT hr = m_pNuiSensor->NuiImageStreamGetNextFrame( m_pVideoStreamHandle, 0, &imageFrame );
@@ -428,6 +370,8 @@ void Kinect::Nui_GotColorAlert( ) {
 // Handle new depth data
 //-------------------------------------------------------------------
 void Kinect::Nui_GotDepthAlert( ) {
+	printf("D");
+
     NUI_IMAGE_FRAME imageFrame;
 
     HRESULT hr = m_pNuiSensor->NuiImageStreamGetNextFrame(
@@ -472,180 +416,6 @@ void Kinect::Nui_GotDepthAlert( ) {
     m_pNuiSensor->NuiImageStreamReleaseFrame( m_pDepthStreamHandle, &imageFrame );
 }
 
-// void Kinect::Nui_BlankSkeletonScreen (HWND hWnd, bool getDC ) {
-//     
-// 	HDC hdc = getDC ? GetDC( hWnd ) : m_SkeletonDC;
-// 
-//     RECT rct;
-//     GetClientRect( hWnd, &rct );
-//     PatBlt( hdc, 0, 0, rct.right, rct.bottom, BLACKNESS );
-// 
-//     if ( getDC ) {
-//         ReleaseDC( hWnd, hdc );
-//     }
-// }
-
-void Kinect::Nui_DrawSkeletonSegment( NUI_SKELETON_DATA * pSkel, int numJoints, ... ) {
-    
-	va_list vl;
-    va_start(vl, numJoints);
-
-    POINT segmentPositions[NUI_SKELETON_POSITION_COUNT];
-    int segmentPositionsCount = 0;
-
-    DWORD polylinePointCounts[NUI_SKELETON_POSITION_COUNT];
-    int numPolylines = 0;
-    int currentPointCount = 0;
-
-    // Note the loop condition: We intentionally run one iteration beyond the
-    // last element in the joint list, so we can properly end the final polyline.
-    for ( int iJoint = 0; iJoint <= numJoints; iJoint++ ) {
-        if ( iJoint < numJoints ) {
-            NUI_SKELETON_POSITION_INDEX jointIndex = va_arg( vl, NUI_SKELETON_POSITION_INDEX );
-
-            if ( pSkel->eSkeletonPositionTrackingState[jointIndex] != NUI_SKELETON_POSITION_NOT_TRACKED )
-            {
-                // This joint is tracked: add it to the array of segment positions.            
-                segmentPositions[segmentPositionsCount] = m_Points[jointIndex];
-                segmentPositionsCount++;
-                currentPointCount++;
-
-                // Fully processed the current joint; move on to the next one
-                continue;
-            }
-        }
-
-        // If we fall through to here, we're either beyond the last joint, or
-        // the current joint is not tracked: end the current polyline here.
-        if ( currentPointCount > 1 ) {
-            // Current polyline already has at least two points: save the count.
-            polylinePointCounts[numPolylines++] = currentPointCount;
-        } else if ( currentPointCount == 1 ) {
-            // Current polyline has only one point: ignore it.
-            segmentPositionsCount--;
-        }
-        currentPointCount = 0;
-    }
-
-#ifdef _DEBUG
-    // We should end up with no more points in segmentPositions than the
-    // original number of joints.
-    assert(segmentPositionsCount <= numJoints);
-
-    int totalPointCount = 0;
-    for (int i = 0; i < numPolylines; i++)
-    {
-        // Each polyline should contain at least two points.
-        assert(polylinePointCounts[i] > 1);
-
-        totalPointCount += polylinePointCounts[i];
-    }
-
-    // Total number of points in all polylines should be the same as number
-    // of points in segmentPositions.
-    assert(totalPointCount == segmentPositionsCount);
-#endif
-
-    if (numPolylines > 0)
-    {
-        PolyPolyline( m_SkeletonDC, segmentPositions, polylinePointCounts, numPolylines );
-    }
-
-    va_end(vl);
-}
-
-void Kinect::Nui_DrawSkeleton( NUI_SKELETON_DATA * pSkel, HWND hWnd, int WhichSkeletonColor ) {
-    
-	HGDIOBJ hOldObj = SelectObject( m_SkeletonDC, m_Pen[WhichSkeletonColor % m_PensTotal] );
-    
-    RECT rct;
-    GetClientRect(hWnd, &rct);
-    int width = rct.right;
-    int height = rct.bottom;
-    
-    if ( m_Pen[0] == NULL ) {
-        for (int i = 0; i < m_PensTotal; i++) {
-            m_Pen[i] = CreatePen( PS_SOLID, width / 80, g_SkeletonColors[i] );
-        }
-    }
-
-    int i;
-    USHORT depth;
-    for (i = 0; i < NUI_SKELETON_POSITION_COUNT; i++)
-    {
-        NuiTransformSkeletonToDepthImage( pSkel->SkeletonPositions[i], &m_Points[i].x, &m_Points[i].y, &depth );
-
-        m_Points[i].x = (m_Points[i].x * width) / 320;
-        m_Points[i].y = (m_Points[i].y * height) / 240;
-    }
-
-    SelectObject(m_SkeletonDC,m_Pen[WhichSkeletonColor%m_PensTotal]);
-    
-    Nui_DrawSkeletonSegment(pSkel, 4, NUI_SKELETON_POSITION_HIP_CENTER     , NUI_SKELETON_POSITION_SPINE         , NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_HEAD);
-    Nui_DrawSkeletonSegment(pSkel, 5, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT , NUI_SKELETON_POSITION_ELBOW_LEFT     , NUI_SKELETON_POSITION_WRIST_LEFT, NUI_SKELETON_POSITION_HAND_LEFT);
-    Nui_DrawSkeletonSegment(pSkel, 5, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_RIGHT, NUI_SKELETON_POSITION_ELBOW_RIGHT    , NUI_SKELETON_POSITION_WRIST_RIGHT, NUI_SKELETON_POSITION_HAND_RIGHT);
-    Nui_DrawSkeletonSegment(pSkel, 5, NUI_SKELETON_POSITION_HIP_CENTER     , NUI_SKELETON_POSITION_HIP_LEFT      , NUI_SKELETON_POSITION_KNEE_LEFT      , NUI_SKELETON_POSITION_ANKLE_LEFT, NUI_SKELETON_POSITION_FOOT_LEFT);
-    Nui_DrawSkeletonSegment(pSkel, 5, NUI_SKELETON_POSITION_HIP_CENTER     , NUI_SKELETON_POSITION_HIP_RIGHT     , NUI_SKELETON_POSITION_KNEE_RIGHT     , NUI_SKELETON_POSITION_ANKLE_RIGHT, NUI_SKELETON_POSITION_FOOT_RIGHT);
-    
-    // Draw the joints in a different color
-    for ( i = 0; i < NUI_SKELETON_POSITION_COUNT ; i++ ) {
-        if ( pSkel->eSkeletonPositionTrackingState[i] != NUI_SKELETON_POSITION_NOT_TRACKED ) {
-            HPEN hJointPen;
-            hJointPen = CreatePen( PS_SOLID, 9, g_JointColorTable[i] );
-            hOldObj = SelectObject( m_SkeletonDC, hJointPen );
-            MoveToEx( m_SkeletonDC, m_Points[i].x, m_Points[i].y, NULL );
-            LineTo( m_SkeletonDC, m_Points[i].x, m_Points[i].y );
-            SelectObject( m_SkeletonDC, hOldObj );
-            DeleteObject( hJointPen );
-        }
-    }
-
-    if (m_bAppTracking) {
-        Nui_DrawSkeletonId(pSkel, hWnd, WhichSkeletonColor);
-    }
-}
-
-void Kinect::Nui_DrawSkeletonId( NUI_SKELETON_DATA * pSkel, HWND hWnd, int WhichSkeletonColor ) {
-
-    RECT rct;
-    GetClientRect( hWnd, &rct );
-
-    float fx = 0, fy = 0;
-
-    NuiTransformSkeletonToDepthImage( pSkel->Position, &fx, &fy );
-
-    int skelPosX = (int)( fx * rct.right + 0.5f );
-    int skelPosY = (int)( fy * rct.bottom + 0.5f );
-
-    WCHAR number[20];
-    size_t length;
-
-    if ( FAILED(StringCchPrintf(number, ARRAYSIZE(number), L"%d", pSkel->dwTrackingID)) ) {
-        return;
-    }
-
-    if ( FAILED(StringCchLength(number, ARRAYSIZE(number), &length)) ) {
-        return;
-    }
-
-    if ( m_hFontSkeletonId == NULL )
-    {
-        LOGFONT lf;
-        GetObject( (HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf );
-        lf.lfHeight *= 2;
-        m_hFontSkeletonId = CreateFontIndirect( &lf );
-    }
-
-    HGDIOBJ hLastFont = SelectObject( m_SkeletonDC, m_hFontSkeletonId );
-    SetTextAlign( m_SkeletonDC, TA_CENTER );
-    SetTextColor( m_SkeletonDC, g_SkeletonColors[WhichSkeletonColor] );
-    SetBkColor( m_SkeletonDC, RGB(0, 0, 0) );
-
-    TextOut( m_SkeletonDC, skelPosX, skelPosY, number, (int)length);
-
-    SelectObject( m_SkeletonDC, hLastFont );
-}
-
 void Kinect::Nui_DoDoubleBuffer( HWND hWnd, HDC hDC ) {
     RECT rct;
     GetClientRect(hWnd, &rct);
@@ -663,6 +433,8 @@ void Kinect::Nui_DoDoubleBuffer( HWND hWnd, HDC hDC ) {
 // Handle new skeleton data
 //-------------------------------------------------------------------
 void Kinect::Nui_GotSkeletonAlert( ) {
+	printf("S");
+
     NUI_SKELETON_FRAME SkeletonFrame = {0};
 
     bool bFoundSkeleton = false;
@@ -695,7 +467,7 @@ void Kinect::Nui_GotSkeletonAlert( ) {
     m_LastSkeletonFoundTime = timeGetTime( );
 
     // draw each skeleton color according to the slot within they are found.
-    Nui_BlankSkeletonScreen( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), false );
+    //Nui_BlankSkeletonScreen( GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), false );
 
     bool bSkeletonIdsChanged = false;
     for ( int i = 0 ; i < NUI_SKELETON_COUNT; i++ ) {
@@ -708,9 +480,9 @@ void Kinect::Nui_GotSkeletonAlert( ) {
         if( SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_TRACKED &&
             SkeletonFrame.SkeletonData[i].eSkeletonPositionTrackingState[NUI_SKELETON_POSITION_SHOULDER_CENTER] != NUI_SKELETON_POSITION_NOT_TRACKED)
         {
-            Nui_DrawSkeleton( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
+            //Nui_DrawSkeleton( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
         } else if ( m_bAppTracking && SkeletonFrame.SkeletonData[i].eTrackingState == NUI_SKELETON_POSITION_ONLY ) {
-            Nui_DrawSkeletonId( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
+            //Nui_DrawSkeletonId( &SkeletonFrame.SkeletonData[i], GetDlgItem( m_hWnd, IDC_SKELETALVIEW ), i );
         }
     }
 

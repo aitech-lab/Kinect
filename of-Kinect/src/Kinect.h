@@ -1,10 +1,21 @@
 #ifndef __KINECT__
 #define __KINECT__
 
+// Windows Header Files
+#include "resource.h"
+
 #include <windows.h>
 #include <ole2.h>
+#include <stdio.h>
 
-#include "resource.h"
+// C RunTime Header Files
+#include <stdlib.h>
+#include <assert.h>
+#include <malloc.h>
+#include <memory.h>
+#include <tchar.h>
+#include <strsafe.h> 
+
 #include "NuiApi.h"
 
 class Kinect {
@@ -14,19 +25,15 @@ public:
    ~Kinect();
 
     HRESULT                 Nui_Init( );
-    HRESULT                 Nui_Init( OLECHAR * instanceName );
     void                    Nui_UnInit( );
+
     void                    Nui_GotDepthAlert( );
     void                    Nui_GotColorAlert( );
     void                    Nui_GotSkeletonAlert( );
 
     void                    Nui_Zero();
-    void                    Nui_BlankSkeletonScreen( HWND hWnd, bool getDC );
     void                    Nui_DoDoubleBuffer(HWND hWnd,HDC hDC);
-    void                    Nui_DrawSkeleton( NUI_SKELETON_DATA * pSkel, HWND hWnd, int WhichSkeletonColor );
-    void                    Nui_DrawSkeletonId( NUI_SKELETON_DATA * pSkel, HWND hWnd, int WhichSkeletonColor );
 
-    void                    Nui_DrawSkeletonSegment( NUI_SKELETON_DATA * pSkel, int numJoints, ... );
     void                    Nui_EnableSeatedTracking(bool seated);
     void                    Nui_SetApplicationTracking(bool applicationTracks);
     void                    Nui_SetTrackedSkeletons(int skel1, int skel2);

@@ -122,6 +122,7 @@ if not exist "$(ProjectDir)\bin\data" mkdir  "$(ProjectDir)\bin\data"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Kinect.h" />
+    <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\testApp.h" />
   </ItemGroup>
   <ItemGroup>

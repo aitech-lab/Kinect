@@ -3,14 +3,15 @@
 //--------------------------------------------------------------
 void testApp::setup(){
 
-	//kinect.start();
+	kinect.Nui_Init();
 
 }
 
 //--------------------------------------------------------------
 void testApp::exit() {
 
-	//kinect.stop();
+
+	kinect.Nui_UnInit();
 
 }
 
