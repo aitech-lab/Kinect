@@ -282,9 +282,8 @@ DWORD WINAPI Kinect::Nui_ProcessThread() {
 //-------------------------------------------------------------------
 
 void Kinect::Nui_GotColorAlert( ) {
-	printf("C");
 
-    NUI_IMAGE_FRAME imageFrame;
+	NUI_IMAGE_FRAME imageFrame;
 
     HRESULT hr = m_pNuiSensor->NuiImageStreamGetNextFrame( m_pVideoStreamHandle, 0, &imageFrame );
 
@@ -297,7 +296,7 @@ void Kinect::Nui_GotColorAlert( ) {
     pTexture->LockRect( 0, &LockedRect, NULL, 0 );
 
 	if ( LockedRect.Pitch != 0 ) {
-		memcpy(colorBuffer, LockedRect.pBits, 640*480*3);
+		memcpy(colorBuffer, LockedRect.pBits, 640*480*4);
 		//color.setFromPixels((const unsigned char*)(LockedRect.pBits), 640,480, OF_IMAGE_COLOR);
 		
     } 
@@ -313,7 +312,6 @@ void Kinect::Nui_GotColorAlert( ) {
 // Handle new depth data
 //-------------------------------------------------------------------
 void Kinect::Nui_GotDepthAlert( ) {
-	printf("D");
 
     NUI_IMAGE_FRAME imageFrame;
 
@@ -372,7 +370,6 @@ void Kinect::Nui_DoDoubleBuffer( HWND hWnd, HDC hDC ) {
 // Handle new skeleton data
 //-------------------------------------------------------------------
 void Kinect::Nui_GotSkeletonAlert( ) {
-	printf("S");
 
     NUI_SKELETON_FRAME SkeletonFrame = {0};
 

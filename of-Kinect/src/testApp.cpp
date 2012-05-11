@@ -17,7 +17,7 @@ void testApp::exit() {
 
 //--------------------------------------------------------------
 void testApp::update(){
-	color.setFromPixels((unsigned char *) kinect.colorBuffer, 640,480, OF_IMAGE_COLOR_ALPHA);
+	color.setFromPixels((unsigned char *) kinect.colorBuffer, 640,480, OF_IMAGE_COLOR_ALPHA, false);
 	color.update();
 
 	depth.setFromPixels((unsigned char *) kinect.depthBuffer, 320,240, OF_IMAGE_COLOR_ALPHA);
