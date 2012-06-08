@@ -1,5 +1,5 @@
-ofxMsKinect10
+Ailove-Kinect
 =============
 
-Integration of openframeworks with MS Kinect SDK
-<img src="https://github.com/ailove-lab/ofxMsKinect10/blob/master/screenshot.png?raw=true"/>
+Various experiments with MS Kinect SDK
+<img src="https://github.com/ailove-lab/Ailove-Kinect/blob/master/screenshot.png?raw=true"/>
