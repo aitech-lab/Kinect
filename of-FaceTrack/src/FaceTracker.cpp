@@ -411,25 +411,29 @@ void FaceTracker::Nui_GotDepthAlert( ) {
     NUI_LOCKED_RECT LockedRect;
     pTexture->LockRect( 0, &LockedRect, NULL, 0 );
     if ( 0 != LockedRect.Pitch ) {
-
-		DWORD frameWidth, frameHeight;
 		
-		NuiImageResolutionToSize( imageFrame.eResolution, frameWidth, frameHeight );
-		
-		// draw the bits to the bitmap
-		RGBQUAD * rgbrun = (RGBQUAD*) depthBuffer;
-		USHORT * pBufferRun = (USHORT *)LockedRect.pBits;
+		memcpy(depthBuffer, PBYTE(LockedRect.pBits), 320*240*2);
+  
+		// OLD Transfromation, good for depth visualisation
 
-		// end pixel is start + width*height - 1
-		USHORT * pBufferEnd = pBufferRun + (frameWidth * frameHeight);
-
-		assert( frameWidth * frameHeight <= ARRAYSIZE(m_rgbWk) );
-
-		while ( pBufferRun < pBufferEnd ) {
-		    *rgbrun = Nui_ShortToQuad_Depth( *pBufferRun );
-		    ++pBufferRun;
-		    ++rgbrun;
-		}
+		// DWORD frameWidth, frameHeight;
+		// 
+		// NuiImageResolutionToSize( imageFrame.eResolution, frameWidth, frameHeight );
+		// 
+		// // draw the bits to the bitmap
+		// RGBQUAD * rgbrun = (RGBQUAD*) depthBuffer;
+		// USHORT * pBufferRun = (USHORT *)LockedRect.pBits;
+		// 
+		// // end pixel is start + width*height - 1
+		// USHORT * pBufferEnd = pBufferRun + (frameWidth * frameHeight);
+		// 
+		// assert( frameWidth * frameHeight <= ARRAYSIZE(m_rgbWk) );
+		// 
+		// while ( pBufferRun < pBufferEnd ) {
+		//     *rgbrun = Nui_ShortToQuad_Depth( *pBufferRun );
+		//     ++pBufferRun;
+		//     ++rgbrun;
+		// }
     }
     pTexture->UnlockRect( 0 );
 

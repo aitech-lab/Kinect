@@ -34,6 +34,10 @@ void testApp::exit() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
+
+	color.draw(  0, 0, 320, 240);
+	depth.draw(320, 0, 320, 240);
+
 	FT_VECTOR2D* points;
     UINT         count;
     HRESULT hr = faceTracker.pFTResult->Get2DShapePoints(&points, &count);

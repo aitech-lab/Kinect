@@ -1,0 +1,38 @@
+﻿Build started 11.06.2012 2:19:33.
+     1>Project "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\SingleFace\SingleFace.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\v1.5\\inc" /I"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\SingleFace\\FTSDK\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.5\\inc" /I"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\\FTSDK\inc" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\include" /I"c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include" /I"c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Yu"StdAfx.h" /Fp"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.pch" /Fo"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\\" /Fd"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt FTHelper.cpp
+         FTHelper.cpp
+       ResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\SingleFace.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\SingleFace\\FTSDK\Lib\x86" /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.5\\Lib\x86" /LIBPATH:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\\FTSDK\Lib\x86" /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.5\\Lib\x86" /LIBPATH:"c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib" /LIBPATH:"c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\atlmfc\lib" /LIBPATH:"c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib" /LIBPATH:"c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\lib" FaceTrackLib.lib Kinect10.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\SingleFace.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\SingleFace.lib" /MACHINE:X86 "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.res"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\eggavatar.obj"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.obj"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\FTHelper.obj"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\KinectSensor.obj"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\stdafx.obj"
+         "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\Visualize.obj"
+         Generating code
+         Finished generating code
+         SingleFace.vcxproj -> C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\SingleFace.exe
+       Manifest:
+         c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\SingleFace.exe;#1" /manifest "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.exe.intermediate.manifest"
+       PostBuildEvent:
+         xcopy "C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.5.0\Redist\x86\FaceTrackLib.dll" "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\" /eiycq
+         xcopy "C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.5.0\Redist\x86\FaceTrackData.dll" "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Out\SingleFace\x86\Release\" /eiycq
+         
+         :VCEnd
+         Скопировано файлов: 1.
+         Скопировано файлов: 1.
+       FinalizeBuildStatus:
+         Deleting file "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.unsuccessfulbuild".
+         Touching "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\Int\SingleFace\x86\Release\SingleFace.lastbuildstate".
+     1>Done Building Project "C:\Laboratory\Projects\Ailove-Kinect\FaceTracking\SingleFace\SingleFace.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.46
