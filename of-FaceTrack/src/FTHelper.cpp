@@ -4,63 +4,77 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+#include "StdAfx.h"
 #include "FTHelper.h"
+#include "Visualize.h"
+
+#ifdef SAMPLE_OPTIONS
+#include "Options.h"
+#else
 PVOID _opt = NULL;
+#endif
 
 FTHelper::FTHelper() {
-    m_pFaceTracker = 0;
-    m_hWnd = NULL;
-    m_pFTResult = NULL;
-    m_colorImage = NULL;
-    m_depthImage = NULL;
+    m_pFaceTracker         = 0;
+    m_hWnd                 = NULL;
+    m_pFTResult            = NULL;
+    m_colorImage           = NULL;
+    m_depthImage           = NULL;
     m_ApplicationIsRunning = false;
-    m_LastTrackSucceeded = false;
-    m_CallBack = NULL;
-    m_XCenterFace = 0;
-    m_YCenterFace = 0;
-    m_hFaceTrackingThread = NULL;
-    m_DrawMask = TRUE;
-    m_depthType = NUI_IMAGE_TYPE_DEPTH;
-    m_depthRes = NUI_IMAGE_RESOLUTION_INVALID;
-    m_bNearMode = FALSE;
-    m_bFallbackToDefault = FALSE;
-    m_colorType = NUI_IMAGE_TYPE_COLOR;
-    m_colorRes = NUI_IMAGE_RESOLUTION_INVALID;
+    m_LastTrackSucceeded   = false;
+    m_CallBack             = NULL;
+    m_XCenterFace          = 0;
+    m_YCenterFace          = 0;
+    m_hFaceTrackingThread  = NULL;
+    m_DrawMask             = TRUE;
+    m_depthType            = NUI_IMAGE_TYPE_DEPTH;
+    m_depthRes             = NUI_IMAGE_RESOLUTION_INVALID;
+    m_bNearMode            = FALSE;
+    m_bFallbackToDefault   = FALSE;
+    m_colorType            = NUI_IMAGE_TYPE_COLOR;
+    m_colorRes             = NUI_IMAGE_RESOLUTION_INVALID;
 }
 
-FTHelper::~FTHelper() {
+FTHelper::~FTHelper()
+{
     Stop();
 }
 
 HRESULT FTHelper::Init(
-	FTHelperCallBack callBack, PVOID callBackParam, 
-    NUI_IMAGE_TYPE depthType, NUI_IMAGE_RESOLUTION depthRes, 
-	BOOL bNearMode, BOOL bFallbackToDefault, NUI_IMAGE_TYPE colorType, 
-	NUI_IMAGE_RESOLUTION colorRes, BOOL bSeatedSkeletonMode) {
+	// HWND hWnd, 
+	FTHelperCallBack     callBack, 
+	PVOID                callBackParam, 
+    NUI_IMAGE_TYPE       depthType, 
+	NUI_IMAGE_RESOLUTION depthRes, 
+	BOOL                 bNearMode, 
+	BOOL                 bFallbackToDefault, 
+	NUI_IMAGE_TYPE       colorType, 
+	NUI_IMAGE_RESOLUTION colorRes, 
+	BOOL                 bSeatedSkeletonMode) {
 
-    if (!callBack) {
-        return E_INVALIDARG;
-    }
-
-    m_CallBack = callBack;
-    m_CallBackParam = callBackParam;
+    //if (!hWnd || !callBack) {
+    //    return E_INVALIDARG;
+    //}
+	
+    // m_hWnd = hWnd;
+    m_CallBack             = callBack;
+    m_CallBackParam        = callBackParam;
     m_ApplicationIsRunning = true;
-    m_depthType = depthType;
-    m_depthRes = depthRes;
-    m_bNearMode = bNearMode;
-    m_bFallbackToDefault = bFallbackToDefault;
-	m_bSeatedSkeletonMode = bSeatedSkeletonMode;
-    m_colorType = colorType;
-    m_colorRes = colorRes;
-    m_hFaceTrackingThread = CreateThread(NULL, 0, FaceTrackingStaticThread, (PVOID)this, 0, 0);
+    m_depthType            = depthType;
+    m_depthRes             = depthRes;
+    m_bNearMode            = bNearMode;
+    m_bFallbackToDefault   = bFallbackToDefault;
+	m_bSeatedSkeletonMode  = bSeatedSkeletonMode;
+    m_colorType            = colorType;
+    m_colorRes             = colorRes;
+    m_hFaceTrackingThread  = CreateThread(NULL, 0, FaceTrackingStaticThread, (PVOID)this, 0, 0);
     return S_OK;
 }
 
 HRESULT FTHelper::Stop() {
 
     m_ApplicationIsRunning = false;
-    if (m_hFaceTrackingThread)
-    {
+    if (m_hFaceTrackingThread) {
         WaitForSingleObject(m_hFaceTrackingThread, 1000);
     }
     m_hFaceTrackingThread = 0;
@@ -68,28 +82,24 @@ HRESULT FTHelper::Stop() {
 }
 
 BOOL FTHelper::SubmitFraceTrackingResult(IFTResult* pResult) {
-    if (pResult != NULL && SUCCEEDED(pResult->GetStatus()))
-    {
-        if (m_CallBack)
-        {
-            (*m_CallBack)(m_CallBackParam);
-        }
 
-        if (m_DrawMask)
-        {
+    if (pResult != NULL && SUCCEEDED(pResult->GetStatus())) {
+		
+		// if (m_CallBack) {
+        //     (*m_CallBack)(m_CallBackParam);
+        // }
+        
+		if (m_DrawMask) {
             FLOAT* pSU = NULL;
             UINT numSU;
             BOOL suConverged;
             m_pFaceTracker->GetShapeUnits(NULL, &pSU, &numSU, &suConverged);
             POINT viewOffset = {0, 0};
             FT_CAMERA_CONFIG cameraConfig;
-            if (m_KinectSensorPresent)
-            {
+            if (m_KinectSensorPresent) {
                 m_KinectSensor.GetVideoConfiguration(&cameraConfig);
-            }
-            else
-            {
-                cameraConfig.Width = 640;
+			} else {
+                cameraConfig.Width  = 640;
                 cameraConfig.Height = 480;
                 cameraConfig.FocalLength = 500.0f;
             }
@@ -101,6 +111,10 @@ BOOL FTHelper::SubmitFraceTrackingResult(IFTResult* pResult) {
                 ftModel->Release();
             }
         }
+
+		if (m_CallBack) {
+            (*m_CallBack)(m_CallBackParam);
+        }
     }
     return TRUE;
 }
@@ -110,10 +124,8 @@ void FTHelper::SetCenterOfImage(IFTResult* pResult)
 {
     float centerX = ((float)m_colorImage->GetWidth())/2.0f;
     float centerY = ((float)m_colorImage->GetHeight())/2.0f;
-    if (pResult)
-    {
-        if (SUCCEEDED(pResult->GetStatus()))
-        {
+    if (pResult) {
+        if (SUCCEEDED(pResult->GetStatus())) {
             RECT faceRect;
             pResult->GetFaceRect(&faceRect);
             centerX = (faceRect.left+faceRect.right)/2.0f;
@@ -134,8 +146,7 @@ void FTHelper::CheckCameraInput()
 {
     HRESULT hrFT = E_FAIL;
 
-    if (m_KinectSensorPresent && m_KinectSensor.GetVideoBuffer())
-    {
+    if (m_KinectSensorPresent && m_KinectSensor.GetVideoBuffer()) {
         HRESULT hrCopy = m_KinectSensor.GetVideoBuffer()->CopyTo(m_colorImage, NULL, 0, 0);
         if (SUCCEEDED(hrCopy) && m_KinectSensor.GetDepthBuffer())
         {
@@ -205,8 +216,8 @@ DWORD WINAPI FTHelper::FaceTrackingThread()
         m_KinectSensorPresent = FALSE;
         WCHAR errorText[MAX_PATH];
         ZeroMemory(errorText, sizeof(WCHAR) * MAX_PATH);
-        //wsprintf(errorText, L"Could not initialize the Kinect sensor. hr=0x%x\n", hr);
-        //MessageBoxW(m_hWnd, errorText, L"Face Tracker Initialization Error\n", MB_OK);
+        wsprintf(errorText, L"Could not initialize the Kinect sensor. hr=0x%x\n", hr);
+        // MessageBoxW(m_hWnd, errorText, L"Face Tracker Initialization Error\n", MB_OK);
         return 1;
     }
 
@@ -214,7 +225,7 @@ DWORD WINAPI FTHelper::FaceTrackingThread()
     m_pFaceTracker = FTCreateFaceTracker(_opt);
     if (!m_pFaceTracker)
     {
-       // MessageBoxW(m_hWnd, L"Could not create the face tracker.\n", L"Face Tracker Initialization Error\n", MB_OK);
+        // MessageBoxW(m_hWnd, L"Could not create the face tracker.\n", L"Face Tracker Initialization Error\n", MB_OK);
         return 2;
     }
 
@@ -225,7 +236,7 @@ DWORD WINAPI FTHelper::FaceTrackingThread()
         GetCurrentDirectoryW(ARRAYSIZE(path), path);
         wsprintf(buffer, L"Could not initialize face tracker (%s). hr=0x%x", path, hr);
 
-       // MessageBoxW(m_hWnd, /*L"Could not initialize the face tracker.\n"*/ buffer, L"Face Tracker Initialization Error\n", MB_OK);
+        // MessageBoxW(m_hWnd, /*L"Could not initialize the face tracker.\n"*/ buffer, L"Face Tracker Initialization Error\n", MB_OK);
 
         return 3;
     }
@@ -233,7 +244,7 @@ DWORD WINAPI FTHelper::FaceTrackingThread()
     hr = m_pFaceTracker->CreateFTResult(&m_pFTResult);
     if (FAILED(hr) || !m_pFTResult)
     {
-       // MessageBoxW(m_hWnd, L"Could not initialize the face tracker result.\n", L"Face Tracker Initialization Error\n", MB_OK);
+        // MessageBoxW(m_hWnd, L"Could not initialize the face tracker result.\n", L"Face Tracker Initialization Error\n", MB_OK);
         return 4;
     }
 
@@ -259,8 +270,8 @@ DWORD WINAPI FTHelper::FaceTrackingThread()
     while (m_ApplicationIsRunning)
     {
         CheckCameraInput();
-        //InvalidateRect(m_hWnd, NULL, FALSE);
-        //UpdateWindow(m_hWnd);
+        // InvalidateRect(m_hWnd, NULL, FALSE);
+        // UpdateWindow(m_hWnd);
         Sleep(16);
     }
 

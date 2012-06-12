@@ -1,7 +1,8 @@
-#pragma once
+#ifndef _TEST_APP_
+#define _TEST_APP_
 
 #include "ofMain.h"
-#include "FaceTracker.h"
+#include "FTHelper.h"
 
 class testApp : public ofBaseApp {
 
@@ -20,22 +21,21 @@ class testApp : public ofBaseApp {
 		void windowResized(int w, int h);
 		void dragEvent    (ofDragInfo dragInfo);
 		void gotMessage   (ofMessage msg);
-		
-		FaceTracker faceTracker;
-		ofImage     color;
-		ofImage     depth;
 
-		//static void FTHelperCallingBack(PVOID pVoid);
+		unsigned char colorBuffer[640*480*4];
+		ofImage color;
+
+		// TRACKER STUFS
+		static void FTHelperCallingBack(PVOID pVoid);
 		
-		//FTHelper             m_FTHelper;
-		//IFTImage*            m_pImageBuffer;
-		//IFTImage*            m_pVideoBuffer;
-		//
-		//NUI_IMAGE_TYPE       m_depthType;
-		//NUI_IMAGE_TYPE       m_colorType;
-		//NUI_IMAGE_RESOLUTION m_depthRes;
-		//NUI_IMAGE_RESOLUTION m_colorRes;
-		//BOOL                 m_bNearMode;
-		//BOOL                 m_bSeatedSkeletonMode;
+		FTHelper             faceTracker;
+		
+		NUI_IMAGE_TYPE       depthType;
+		NUI_IMAGE_TYPE       colorType;
+		NUI_IMAGE_RESOLUTION depthRes;
+		NUI_IMAGE_RESOLUTION colorRes;
+		BOOL                 nearMode;
+		BOOL                 seatedSkeletonMode;
 		
 };
+#endif

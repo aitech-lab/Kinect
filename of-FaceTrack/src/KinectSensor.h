@@ -7,18 +7,7 @@
 #ifndef _KINECT_SENSOR_
 #define _KINECT_SENSOR_
 
-// Windows Header Files:
-#include <windows.h>
-#include <Shellapi.h>
-
-// C RunTime Header Files
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <crtdbg.h>
-
-#include <FaceTrackLib.h>
+#include "FaceTrackLib.h"
 #include <NuiApi.h>
 
 class KinectSensor
@@ -35,7 +24,7 @@ public:
 
     IFTImage*   GetVideoBuffer(){ return(m_VideoBuffer); };
     IFTImage*   GetDepthBuffer(){ return(m_DepthBuffer); };
-    float       GetZoomFactor() { return(m_ZoomFactor ); };
+    float       GetZoomFactor() { return(m_ZoomFactor); };
     POINT*      GetViewOffSet() { return(&m_ViewOffset); };
     HRESULT     GetClosestHint(FT_VECTOR3D* pHint3D);
 
@@ -69,5 +58,4 @@ private:
     void GotDepthAlert();
     void GotSkeletonAlert();
 };
-
 #endif
